@@ -11,6 +11,7 @@ export async function getMembers() {
     });
   } catch (err) {
     console.log(err);
+    throw err
   }
 }
 
@@ -19,5 +20,6 @@ export const getMemberByUserId = cache((id: string) => {
     return prisma.member.findUnique({ where: { userId: id } });
   } catch (err) {
     console.log(err);
+    throw err
   }
 })
