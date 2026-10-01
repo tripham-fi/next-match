@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-type props = {
+type Props = {
   href: string;
   label: string;
 };
 
-export default function NavLink({ href, label }: props) {
+export default function NavLink({ href, label }: Props) {
   const pathName = usePathname();
   return (
     <Link

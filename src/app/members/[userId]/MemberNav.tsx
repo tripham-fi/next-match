@@ -12,7 +12,6 @@ export const sections = [
 export default function MemberNav({ userId }: { userId: string }) {
   const active = useSelectedLayoutSegment();
   const base = `/members/${userId}`;
-  console.log(sections);
 
   return (
     <nav className="flex flex-col p-4 ml-4 text-2xl gap-4">
