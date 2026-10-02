@@ -7,6 +7,13 @@ import { notFound } from "next/navigation";
 import { ReactNode } from "react";
 import MemberNav from "./MemberNav";
 import SectionTitle from "./SectionTitle";
+import { getCurrentUser } from "@/lib/auth";
+
+export const sections = [
+  { name: "Profile", path: "", segment: null },
+  { name: "Photo", path: "/photos", segment: "photos" },
+  { name: "Chat", path: "/chat", segment: "chat" },
+];
 
 export default async function layout({
   children,
@@ -17,6 +24,9 @@ export default async function layout({
 }) {
   const { userId } = await params;
   const member = await getMemberByUserId(userId);
+  const currentUser = await getCurrentUser();
+
+  const isCurrentUser = currentUser?.id === userId;
 
   if (!member) return notFound();
   return (
@@ -42,12 +52,22 @@ export default async function layout({
               </div>
             </div>
             <Separator />
-            <MemberNav userId={member.userId} />
+            <MemberNav
+              userId={member.userId}
+              sections={
+                isCurrentUser
+                  ? sections.filter((x) => x.segment !== "chat")
+                  : sections
+              }
+            />
           </Card.Content>
           <Card.Footer className="w-full">
             <Link
               href="/members"
-              className={buttonVariants({ variant: "primary", className: 'w-full' })}
+              className={buttonVariants({
+                variant: "primary",
+                className: "w-full",
+              })}
             >
               Go back
             </Link>
@@ -56,13 +76,11 @@ export default async function layout({
       </div>
       <div className="col-span-9">
         <Card className="w-full mt-6 h-[80vh]">
-            <Card.Header>
-                <SectionTitle />
-            </Card.Header>
-            <Separator />
-            <Card.Content>
-                {children}
-            </Card.Content>
+          <Card.Header>
+            <SectionTitle sections={sections} />
+          </Card.Header>
+          <Separator />
+          <Card.Content>{children}</Card.Content>
         </Card>
       </div>
     </div>

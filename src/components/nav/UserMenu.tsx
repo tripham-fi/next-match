@@ -1,9 +1,11 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import { Avatar, Dropdown, Label, toast } from "@heroui/react";
+import { Avatar, Dropdown, Label, Separator, toast } from "@heroui/react";
 import { User } from "better-auth";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ComponentProps } from "react";
 
 type Props = {
   user: User;
@@ -37,13 +39,35 @@ export default function UserMenu({ user }: Props) {
         </Avatar>
       </Dropdown.Trigger>
       <Dropdown.Popover>
-        <Dropdown.Menu onAction={(key) => console.log(`Selected: ${key}`)}>
-          <Dropdown.Item id="edit-profile" textValue="Edit Profile">
-            <Label>Edit profile</Label>
-          </Dropdown.Item>
-          <Dropdown.Item onClick={signOut} id="logout" textValue="Logout" variant="danger">
-            <Label>Logout</Label>
-          </Dropdown.Item>
+        <Dropdown.Menu disabledKeys={["signed-in-as"]}>
+          {/* Label */}
+          <Dropdown.Section>
+            <Dropdown.Item id="signed-in-as">
+              Signed in as {user.name}
+            </Dropdown.Item>
+          </Dropdown.Section>
+          <Separator className="my-1" />
+          {/* Action */}
+          <Dropdown.Section>
+            <Dropdown.Item
+              id="edit-profile"
+              textValue="Edit Profile"
+              render={(props) => (
+                <Link {...(props as ComponentProps<typeof Link>)} />
+              )}
+              href={`/members/${user.id}`}
+            >
+              <Label>Edit profile</Label>
+            </Dropdown.Item>
+            <Dropdown.Item
+              onClick={signOut}
+              id="logout"
+              textValue="Logout"
+              variant="danger"
+            >
+              <Label>Logout</Label>
+            </Dropdown.Item>
+          </Dropdown.Section>
         </Dropdown.Menu>
       </Dropdown.Popover>
     </Dropdown>
