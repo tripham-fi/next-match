@@ -40,7 +40,7 @@ export async function updateProfile(
     const user = await requireAuthUser();
 
     const validated = profileEditSchema.safeParse(data);
-    
+
     if (!validated.success)
       return { status: "error", error: validated.error.issues };
 
@@ -65,4 +65,13 @@ export async function updateProfile(
     if (err instanceof Error) return { status: "error", error: err.message };
     else return { status: "error", error: "Something went wrong" };
   }
+}
+
+export async function getMemberPhotosByUserId(userId: string) {
+  const member = await prisma.member.findUnique({
+    where: { userId },
+    select: { photos: true },
+  });
+
+  return member?.photos;
 }
