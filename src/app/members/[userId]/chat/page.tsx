@@ -1,7 +1,24 @@
-import React from 'react'
+import React from "react";
+import ChatForm from "./ChatForm";
+import { getMessageThread } from "@/server/actions/messages";
 
-export default function ChatPage() {
+export default async function ChatPage(
+  props: PageProps<"/members/[userId]/chat">,
+) {
+  const { userId } = await props.params;
+  const messages = await getMessageThread(userId);
   return (
-    <div>ChatPage</div>
-  )
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto ">
+        <ul>
+          {messages?.map((message) => (
+            <li key={message.id}>
+              <p>{message.text}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <ChatForm />
+    </div>
+  );
 }
