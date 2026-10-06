@@ -1,6 +1,6 @@
 "use client";
 
-import { Path, useForm } from "react-hook-form";
+import { Controller, Path, useForm } from "react-hook-form";
 import { Member } from "../../../../generated/prisma/client";
 import {
   profileEditSchema,
@@ -23,18 +23,19 @@ type Props = {
 };
 export default function ProfileForm({ member }: Props) {
   const {
-    register,
+    control,
     handleSubmit,
     reset,
     setError,
-    formState: { errors, isSubmitting, isDirty },
+    formState: { errors, isSubmitting, isDirty, isValid },
   } = useForm<ProfileEditSchema>({
     resolver: zodResolver(profileEditSchema),
+    mode: 'onChange',
     defaultValues: {
-      name: member.name,
-      description: member.description,
-      city: member.city,
-      country: member.country,
+      name: member.name ?? "",
+      description: member.description ?? "",
+      city: member.city ?? "",
+      country: member.country ?? "",
     },
   });
 
@@ -43,12 +44,12 @@ export default function ProfileForm({ member }: Props) {
 
     if (result.status === "success") {
       toast.success("Profile has been updated");
-      reset();
+      reset(data);
     } else {
       if (Array.isArray(result.error)) {
-        result.error.forEach(err => {
-          setError(err.path as Path<unknown>, {message: err.message})
-        })
+        result.error.forEach((err) => {
+          setError(err.path as Path<unknown>, { message: err.message });
+        });
       } else {
         toast.danger(result.error);
       }
@@ -60,61 +61,88 @@ export default function ProfileForm({ member }: Props) {
       className="flex flex-col gap-3 w-full"
     >
       {/* Name */}
-      <TextField
-        defaultValue={member.name}
-        aria-label="name"
-        isInvalid={!!errors.name}
-      >
-        <Label>Display name</Label>
-        <Input placeholder="Enter your name" {...register("name")} />
-        <FieldError>{errors.name?.message}</FieldError>
-      </TextField>
+      <Controller
+        control={control}
+        name="name"
+        render={({ field }) => (
+          <TextField aria-label="name" isInvalid={!!errors.name}>
+            <Label>Display name</Label>
+            <Input
+              {...field}
+              value={field.value ?? ""}
+              placeholder="Enter your name"
+            />
+            <FieldError>{errors.name?.message}</FieldError>
+          </TextField>
+        )}
+      />
 
       {/* Description */}
-      <TextField
-        defaultValue={member.description}
-        aria-label="description"
-        isInvalid={!!errors.description}
-      >
-        <Label>Description</Label>
-        <TextArea
-          rows={4}
-          placeholder="Enter your description"
-          {...register("description")}
-        />
-        <FieldError>{errors.description?.message}</FieldError>
-      </TextField>
+      <Controller
+        control={control}
+        name="description"
+        render={({ field }) => (
+          <TextField aria-label="description" isInvalid={!!errors.description}>
+            <Label>Description</Label>
+            <TextArea
+              {...field}
+              value={field.value ?? ""}
+              rows={4}
+              placeholder="Enter your description"
+            />
+            <FieldError>{errors.description?.message}</FieldError>
+          </TextField>
+        )}
+      />
 
       <div className="flex items-center justify-between gap-3 w-full">
         {/* City */}
-        <TextField
-          className="w-full"
-          defaultValue={member.city}
-          aria-label="city"
-          isInvalid={!!errors.city}
-        >
-          <Label>City</Label>
-          <Input placeholder="Enter your city" {...register("city")} />
-          <FieldError>{errors.city?.message}</FieldError>
-        </TextField>
+        <Controller
+          control={control}
+          name="city"
+          render={({ field }) => (
+            <TextField
+              className="w-full"
+              aria-label="city"
+              isInvalid={!!errors.city}
+            >
+              <Label>City</Label>
+              <Input
+                {...field}
+                value={field.value ?? ""}
+                placeholder="Enter your city"
+              />
+              <FieldError>{errors.city?.message}</FieldError>
+            </TextField>
+          )}
+        />
 
         {/* Country */}
-        <TextField
-          className="w-full"
-          defaultValue={member.country}
-          aria-label="country"
-          isInvalid={!!errors.country}
-        >
-          <Label>Country</Label>
-          <Input placeholder="Enter your country" {...register("country")} />
-          <FieldError>{errors.country?.message}</FieldError>
-        </TextField>
+        <Controller
+          control={control}
+          name="country"
+          render={({ field }) => (
+            <TextField
+              className="w-full"
+              aria-label="country"
+              isInvalid={!!errors.country}
+            >
+              <Label>Country</Label>
+              <Input
+                {...field}
+                value={field.value ?? ""}
+                placeholder="Enter your country"
+              />
+              <FieldError>{errors.country?.message}</FieldError>
+            </TextField>
+          )}
+        />
       </div>
       <Button
-        isPending={isSubmitting}
         type="submit"
         className="flex self-end mt-3"
-        isDisabled={!isDirty}
+        isPending={isSubmitting}
+        isDisabled={!isDirty || !isValid}
       >
         Update profile
       </Button>
