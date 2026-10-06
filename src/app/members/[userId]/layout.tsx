@@ -1,4 +1,4 @@
-import { calculateAge } from "@/lib/util";
+import { calculateAge, transformImageUrl } from "@/lib/util";
 import { getMemberByUserId } from "@/server/actions/members";
 import { buttonVariants, Card, Separator } from "@heroui/react";
 import Image from "next/image";
@@ -11,7 +11,7 @@ import { getCurrentUser } from "@/lib/auth";
 
 export const sections = [
   { name: "Profile", path: "", segment: null },
-  { name: "Photo", path: "/photos", segment: "photos" },
+  { name: "Photos", path: "/photos", segment: "photos" },
   { name: "Chat", path: "/chat", segment: "chat" },
 ];
 
@@ -39,7 +39,7 @@ export default async function layout({
             height={500}
             loading="eager"
             sizes="(max-width: 768px) 100vw, 33vw" // ≤768px: image is 100vw (full width). >768px: image is 33vw (about one third).
-            src={member?.image || "/images/user.png"}
+            src={transformImageUrl(member?.image) || "/images/user.png"}
             className="aspect-square object-cover relative rounded-full p-6"
           />
           <Card.Content className="flex flex-col items-center">
@@ -77,7 +77,7 @@ export default async function layout({
       <div className="col-span-9">
         <Card className="w-full mt-6 h-[80vh]">
           <Card.Header>
-            <SectionTitle sections={sections} />
+            <SectionTitle sections={sections} isOwner={isCurrentUser}/>
           </Card.Header>
           <Separator />
           <Card.Content>{children}</Card.Content>
