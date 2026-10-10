@@ -1,7 +1,14 @@
-import React from 'react'
+import { getMessagesByContainer } from "@/server/actions/messages";
 
-export default function MessagesPage() {
+export default async function MessagesPage(props: PageProps<"/messages">) {
+  const {container} = await props.searchParams;
+
+  const messages = await getMessagesByContainer(container as string);
   return (
-    <div>MessagesPage</div>
+    <ul>
+      {messages.map(message => (
+        <li key={message.id}>{message.text}</li>
+      ))}
+    </ul>
   )
 }
