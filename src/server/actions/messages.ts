@@ -7,6 +7,7 @@ import { requireAuthUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
+import { mapMessageToMessageDto } from "@/lib/mapping";
 
 export async function createMessage(
   recipientUserId: string,
@@ -44,7 +45,7 @@ export async function getMessageThread(recipientId: string) {
   try {
     const user = await requireAuthUser();
 
-    return prisma.message.findMany({
+    const messages = await prisma.message.findMany({
       where: {
         OR: [
           // Messages of current logged user
@@ -85,6 +86,8 @@ export async function getMessageThread(recipientId: string) {
         },
       },
     });
+
+    return messages.map(message => mapMessageToMessageDto(message))
   } catch (err) {
     console.log(err);
   }

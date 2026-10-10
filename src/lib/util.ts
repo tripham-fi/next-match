@@ -1,17 +1,21 @@
-import { differenceInYears } from "date-fns";
+import { differenceInYears, format } from "date-fns";
 
 export function calculateAge(dob: string | Date) {
-    return differenceInYears(new Date(), new Date(dob));
+  return differenceInYears(new Date(), new Date(dob));
+}
+
+export function formatShortDate(date: Date) {
+  return format(date, "dd MMM yy h:mm:a");
 }
 
 export function transformImageUrl(imageUrl?: string | null) {
-    if(!imageUrl) return null;
+  if (!imageUrl) return null;
 
-    if(!imageUrl.includes('cloudinary')) return imageUrl;
-    
-    const uploadIndex = imageUrl.indexOf('/upload/') + '/upload/'.length;
+  if (!imageUrl.includes("cloudinary")) return imageUrl;
 
-    const transformation = 'c_fill,w_640,h_640,g_face/';
+  const uploadIndex = imageUrl.indexOf("/upload/") + "/upload/".length;
 
-    return `${imageUrl.slice(0, uploadIndex)}${transformation}${imageUrl.slice(uploadIndex)}`
+  const transformation = "c_fill,w_640,h_640,g_face/";
+
+  return `${imageUrl.slice(0, uploadIndex)}${transformation}${imageUrl.slice(uploadIndex)}`;
 }
