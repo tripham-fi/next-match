@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 import { mapMessageToMessageDto } from "@/lib/mapping";
+import { handlePrismaError } from "@/lib/util";
 
 export async function createMessage(
   recipientUserId: string,
@@ -35,9 +36,7 @@ export async function createMessage(
 
     return { status: "success", data: message };
   } catch (err) {
-    if (err instanceof PrismaClientKnownRequestError)
-      return { status: "error", error: err.message };
-    else return { status: "error", error: "Something went wrong" };
+    return handlePrismaError(err);
   }
 }
 
@@ -82,6 +81,7 @@ export async function getMessageThread(recipientId: string) {
     return messages.map((message) => mapMessageToMessageDto(message));
   } catch (err) {
     console.log(err);
+    throw err;
   }
 }
 
@@ -109,7 +109,10 @@ export async function getMessagesByContainer(container: string) {
   }
 }
 
-export async function deleteMessage(messageId: string, isOutbox: boolean) {
+export async function deleteMessage(
+  messageId: string,
+  isOutbox: boolean,
+): Promise<ActionResult<void>> {
   const selector = isOutbox ? "senderDeleted" : "recipientDeleted";
 
   try {
@@ -150,9 +153,11 @@ export async function deleteMessage(messageId: string, isOutbox: boolean) {
 
     revalidatePath(`/members/${user.id}/chat`);
     revalidatePath("/messages");
+
+    return { status: "success", data: undefined };
   } catch (err) {
     console.log(err);
-    throw err;
+    return handlePrismaError(err);
   }
 }
 
