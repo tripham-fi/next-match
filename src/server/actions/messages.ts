@@ -68,6 +68,17 @@ export async function getMessageThread(recipientId: string) {
       select: messageSelect,
     });
 
+    if (messages.length > 0) {
+      await prisma.message.updateMany({
+        where: {
+          senderId: recipientId,
+          recipientId: user.id,
+          dateRead: null,
+        },
+        data: { dateRead: new Date() },
+      });
+    }
+
     return messages.map((message) => mapMessageToMessageDto(message));
   } catch (err) {
     console.log(err);
@@ -78,16 +89,67 @@ export async function getMessagesByContainer(container: string) {
   try {
     const user = await requireAuthUser();
 
-    const selector = container === "outbox" ? "senderId" : "recipientId";
+    const conditions = {
+      [container === "outbox" ? "senderId" : "recipientId"]: user.id,
+      ...(container === "outbox"
+        ? { senderDeleted: false }
+        : { recipientDeleted: false }),
+    };
 
     const messages = await prisma.message.findMany({
-      where: {
-        [selector]: user.id,
-      },
+      where: conditions,
       select: messageSelect,
+      orderBy: { created: "desc" },
     });
 
     return messages.map((message) => mapMessageToMessageDto(message));
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+}
+
+export async function deleteMessage(messageId: string, isOutbox: boolean) {
+  const selector = isOutbox ? "senderDeleted" : "recipientDeleted";
+
+  try {
+    const user = await requireAuthUser();
+
+    await prisma.message.update({
+      where: { id: messageId },
+      data: {
+        [selector]: true,
+      },
+    });
+
+    // Retrieve list of messages that both party deleted
+    const messagesToDelete = await prisma.message.findMany({
+      where: {
+        OR: [
+          {
+            senderId: user.id,
+            senderDeleted: true,
+            recipientDeleted: true,
+          },
+          {
+            recipientId: user.id,
+            senderDeleted: true,
+            recipientDeleted: true,
+          },
+        ],
+      },
+    });
+
+    if (messagesToDelete.length > 0) {
+      await prisma.message.deleteMany({
+        where: {
+          OR: messagesToDelete.map((m) => ({ id: m.id })),
+        },
+      });
+    }
+
+    revalidatePath(`/members/${user.id}/chat`);
+    revalidatePath("/messages");
   } catch (err) {
     console.log(err);
     throw err;
