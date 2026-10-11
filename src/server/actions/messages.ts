@@ -6,7 +6,6 @@ import { Message } from "../../../generated/prisma/client";
 import { requireAuthUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 import { mapMessageToMessageDto } from "@/lib/mapping";
 import { handlePrismaError } from "@/lib/util";
 
