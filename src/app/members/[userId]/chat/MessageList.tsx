@@ -5,6 +5,8 @@ import { MessageDto } from "@/lib/types";
 import { Channel } from "pusher-js";
 import { useCallback, useEffect, useRef, useState } from "react";
 import MessageBox from "./MessageBox";
+import { formatShortDate } from "@/lib/util";
+import { markedMessageAsRead } from "@/server/actions/messages";
 
 type Props = {
   initialMessages: MessageDto[];
@@ -21,10 +23,24 @@ export default function MessageList({
   const channelRef = useRef<Channel | null>(null);
   const messageEndRef = useRef<HTMLDivElement>(null);
 
-  const handleNewMessage = useCallback((message: MessageDto) => {
+  const handleNewMessage = useCallback(async (message: MessageDto) => {
     setMessages((prev) => {
       return [...prev, message];
     });
+
+    if (message.senderId !== currentUserId) {
+      await markedMessageAsRead([message.id], message.senderId);
+    }
+  }, [currentUserId]);
+
+  const handleReadMessages = useCallback((messageIds: string[]) => {
+    setMessages((prev) =>
+      prev.map((message) =>
+        messageIds.includes(message.id)
+          ? { ...message, dateRead: new Date().toISOString() }
+          : message,
+      ),
+    );
   }, []);
 
   useEffect(() => {
@@ -35,6 +51,7 @@ export default function MessageList({
     if (!channelRef.current) {
       channelRef.current = getPusherClient().subscribe(chatId);
       channelRef.current.bind("message:new", handleNewMessage);
+      channelRef.current.bind("messages:read", handleReadMessages);
     }
 
     return () => {
@@ -43,7 +60,7 @@ export default function MessageList({
         channelRef.current = null;
       }
     };
-  }, [chatId, handleNewMessage]);
+  }, [chatId, handleNewMessage, handleReadMessages]);
   return (
     <div className="flex-1 overflow-y-auto ">
       {messages?.length === 0 ? (

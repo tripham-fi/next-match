@@ -2,7 +2,6 @@
 
 import { chatSchema, ChatSchema } from "@/lib/schemas/chatSchema";
 import { ActionResult, MessageDto } from "@/lib/types";
-import { Message } from "../../../generated/prisma/client";
 import { requireAuthUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
@@ -77,14 +76,25 @@ export async function getMessageThread(recipientId: string) {
     });
 
     if (messages.length > 0) {
+      const readMessageIds = messages
+        .filter(
+          (m) =>
+            m.dateRead === null &&
+            m.recipient?.userId === user.id &&
+            m.sender?.userId === recipientId,
+        )
+        .map((m) => m.id);
+
       await prisma.message.updateMany({
-        where: {
-          senderId: recipientId,
-          recipientId: user.id,
-          dateRead: null,
-        },
+        where: { id: { in: readMessageIds } },
         data: { dateRead: new Date() },
       });
+
+      await pusherServer.trigger(
+        createChatId(recipientId, user.id),
+        "messages:read",
+        readMessageIds,
+      );
     }
 
     return messages.map((message) => mapMessageToMessageDto(message));
@@ -92,6 +102,24 @@ export async function getMessageThread(recipientId: string) {
     console.log(err);
     throw err;
   }
+}
+
+export async function markedMessageAsRead(
+  messageIds: string[],
+  senderId: string,
+) {
+  const user = await requireAuthUser();
+
+  await prisma.message.updateMany({
+    where: { id: { in: messageIds } },
+    data: { dateRead: new Date() },
+  });
+
+  await pusherServer.trigger(
+    createChatId(senderId, user.id),
+    "messages:read",
+    messageIds,
+  );
 }
 
 export async function getMessagesByContainer(container: string) {

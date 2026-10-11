@@ -1,7 +1,7 @@
 "use client";
 
 import { MessageDto } from "@/lib/types";
-import { transformImageUrl } from "@/lib/util";
+import { formatShortDate, timeAgo, transformImageUrl } from "@/lib/util";
 import { Avatar } from "@heroui/react";
 import clsx from "clsx";
 
@@ -11,7 +11,6 @@ type Props = {
 };
 export default function MessageBox({ message, currentUserId }: Props) {
   const isCurrentUserSender = message.senderId === currentUserId;
-
 
   const renderAvatar = () => (
     <div className="self-end">
@@ -48,7 +47,7 @@ export default function MessageBox({ message, currentUserId }: Props) {
           >
             {message.dateRead && message.recipientId !== currentUserId ? (
               <span className="text-xs text-black italic">
-                (Read {message.dateRead})
+                (Read {timeAgo(message.dateRead)})
               </span>
             ) : (
               <div></div>
@@ -59,7 +58,7 @@ export default function MessageBox({ message, currentUserId }: Props) {
                 {message.senderName}
               </span>
               <span className="text-sm text-gray-500 ml-2">
-                {message.created}
+                {formatShortDate(new Date(message.created))}
               </span>
             </div>
           </div>
