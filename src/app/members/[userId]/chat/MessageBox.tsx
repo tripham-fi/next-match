@@ -4,7 +4,6 @@ import { MessageDto } from "@/lib/types";
 import { transformImageUrl } from "@/lib/util";
 import { Avatar } from "@heroui/react";
 import clsx from "clsx";
-import { useEffect, useRef } from "react";
 
 type Props = {
   message: MessageDto;
@@ -12,12 +11,7 @@ type Props = {
 };
 export default function MessageBox({ message, currentUserId }: Props) {
   const isCurrentUserSender = message.senderId === currentUserId;
-  const messageEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (messageEndRef.current)
-      messageEndRef.current.scrollIntoView({ behavior: "auto" });
-  }, [messageEndRef]);
 
   const renderAvatar = () => (
     <div className="self-end">
@@ -73,7 +67,6 @@ export default function MessageBox({ message, currentUserId }: Props) {
         </div>
         {isCurrentUserSender && renderAvatar()}
       </div>
-      <div ref={messageEndRef} />
     </div>
   );
 }

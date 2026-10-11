@@ -32,7 +32,7 @@ export default async function layout({
   return (
     <div className="grid grid-cols-12 gap-5 h-[80vh]">
       <div className="col-span-3">
-        <Card className="w-full mt-6 items-center h-[80vh]">
+        <Card className="w-full mt-6 items-center">
           <Image
             alt={member.name}
             width={500}

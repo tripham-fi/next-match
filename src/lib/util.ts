@@ -27,3 +27,7 @@ export function handlePrismaError<T>(error: unknown): ActionResult<T> {
     return { status: "error", error: error.message };
   else return { status: "error", error: "Something went wrong" };
 }
+
+export function createChatId(a: string, b: string) {
+  return a > b ? `${b}-${a}` : `${a}-${b}`;
+}

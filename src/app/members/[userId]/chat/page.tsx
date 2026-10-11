@@ -1,7 +1,9 @@
 import ChatForm from "./ChatForm";
 import { getMessageThread } from "@/server/actions/messages";
-import MessageBox from "./MessageBox";
 import { getCurrentUser } from "@/lib/auth";
+import MessageList from "./MessageList";
+import { unauthorized } from "next/navigation";
+import { createChatId } from "@/lib/util";
 
 export default async function ChatPage(
   props: PageProps<"/members/[userId]/chat">,
@@ -9,23 +11,17 @@ export default async function ChatPage(
   const { userId } = await props.params;
   const messages = await getMessageThread(userId);
   const currentUser = await getCurrentUser();
+
+  if (!currentUser) return unauthorized();
+
+  const chatId = createChatId(userId, currentUser.id);
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto ">
-        {messages?.length === 0 ? (
-          <p>No message yet. Start the conversation</p>
-        ) : (
-          <>
-            {messages?.map((message) => (
-              <MessageBox
-                key={message.id}
-                message={message}
-                currentUserId={currentUser?.id}
-              />
-            ))}
-          </>
-        )}
-      </div>
+      <MessageList
+        initialMessages={messages}
+        currentUserId={currentUser?.id}
+        chatId={chatId}
+      />
       <ChatForm />
     </div>
   );

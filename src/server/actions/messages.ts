@@ -1,18 +1,19 @@
 "use server";
 
 import { chatSchema, ChatSchema } from "@/lib/schemas/chatSchema";
-import { ActionResult } from "@/lib/types";
+import { ActionResult, MessageDto } from "@/lib/types";
 import { Message } from "../../../generated/prisma/client";
 import { requireAuthUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { mapMessageToMessageDto } from "@/lib/mapping";
-import { handlePrismaError } from "@/lib/util";
+import { createChatId, handlePrismaError } from "@/lib/util";
+import { pusherServer } from "@/lib/pusher";
 
 export async function createMessage(
   recipientUserId: string,
   data: ChatSchema,
-): Promise<ActionResult<Message>> {
+): Promise<ActionResult<MessageDto>> {
   try {
     const user = await requireAuthUser();
 
@@ -29,11 +30,20 @@ export async function createMessage(
         recipientId: recipientUserId,
         senderId: user.id,
       },
+      select: messageSelect,
     });
+
+    const messageDto = mapMessageToMessageDto(message);
+
+    await pusherServer.trigger(
+      createChatId(user.id, recipientUserId),
+      "message:new",
+      messageDto,
+    );
 
     revalidatePath(`/members/${recipientUserId}/chat`);
 
-    return { status: "success", data: message };
+    return { status: "success", data: messageDto };
   } catch (err) {
     return handlePrismaError(err);
   }
