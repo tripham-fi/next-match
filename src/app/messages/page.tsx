@@ -6,5 +6,7 @@ export default async function MessagesPage(props: PageProps<"/messages">) {
   const containerValue = (container as string) ?? "inbox";
 
   const messages = await getMessagesByContainer(containerValue);
-  return <MessageTable messages={messages ?? []} container={containerValue} />;
+  return (
+    <MessageTable key={containerValue} initialMessages={messages ?? []} container={containerValue} />
+  );
 }

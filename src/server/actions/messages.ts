@@ -34,8 +34,16 @@ export async function createMessage(
 
     const messageDto = mapMessageToMessageDto(message);
 
+    // in realtime, send message to other user (recipientUserId)
     await pusherServer.trigger(
       createChatId(user.id, recipientUserId),
+      "message:new",
+      messageDto,
+    );
+
+    // Notify user of new message
+    await pusherServer.trigger(
+      `private-${recipientUserId}`,
       "message:new",
       messageDto,
     );
