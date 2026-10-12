@@ -1,5 +1,6 @@
 "use client";
 
+import PresenceAvatar from "@/components/PresenceAvatar";
 import { MessageDto } from "@/lib/types";
 import { formatShortDate, timeAgo, transformImageUrl } from "@/lib/util";
 import { Avatar } from "@heroui/react";
@@ -14,19 +15,17 @@ export default function MessageBox({ message, currentUserId }: Props) {
 
   const renderAvatar = () => (
     <div className="self-end">
-      <Avatar>
-        <Avatar.Image
-          alt={message.senderName}
-          src={transformImageUrl(message.senderImage) || "/images/user.png"}
-        />
-        <Avatar.Fallback>{message.senderName.charAt(0)}</Avatar.Fallback>
-      </Avatar>
+      <PresenceAvatar
+        src={message.senderImage}
+        userId={message.senderId}
+        name={message.senderName}
+      />
     </div>
   );
   return (
     <div className="grid grid-rows-1">
       <div
-        className={clsx("flex gap-2 mb-3", {
+        className={clsx("flex gap-2 mb-3 mr-2", {
           "justify-end text-right": isCurrentUserSender,
           "justify-start": !isCurrentUserSender,
         })}

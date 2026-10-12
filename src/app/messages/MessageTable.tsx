@@ -1,9 +1,9 @@
 "use client";
 
+import PresenceAvatar from "@/components/PresenceAvatar";
 import { MessageDto } from "@/lib/types";
-import { transformImageUrl } from "@/lib/util";
 import { deleteMessage } from "@/server/actions/messages";
-import { Avatar, Button, Table, toast } from "@heroui/react";
+import { Button, Table, toast } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { AiFillDelete } from "react-icons/ai";
@@ -22,7 +22,7 @@ export default function MessageTable({ messages, container }: Props) {
   const handleDelete = (messageId: string) => {
     startTransition(async () => {
       const result = await deleteMessage(messageId, isOutbox);
-      if(result.status === 'error') toast.danger(result.error as string)
+      if (result.status === "error") toast.danger(result.error as string);
     });
   };
 
@@ -60,13 +60,8 @@ export default function MessageTable({ messages, container }: Props) {
                 >
                   <Table.Cell>
                     <div className="flex items-center gap-3">
-                      <Avatar>
-                        <Avatar.Image
-                          alt={name}
-                          src={transformImageUrl(image) || "/images/user.png"}
-                        />
-                        <span>{name}</span>
-                      </Avatar>
+                      <PresenceAvatar src={image} userId={partyId} />
+                      <span>{name}</span>
                     </div>
                   </Table.Cell>
                   <Table.Cell>
