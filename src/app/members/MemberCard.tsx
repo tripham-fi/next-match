@@ -4,6 +4,7 @@ import { Card, CardFooter } from "@heroui/react";
 import Image from "next/image";
 import { calculateAge } from "@/lib/util";
 import LikeButton from "@/components/LikeButton";
+import PresenceDot from "@/components/PresenceDot";
 
 type Props = {
   member: Member;
@@ -27,9 +28,14 @@ export default function MemberCard({ member, likeIds }: Props) {
         <div className="absolute top-3 right-3 z-50">
           <LikeButton targetUserId={member.userId} hasLiked={hasLiked} />
         </div>
+        <div className="absolute top-2 left-3 z-50">
+          <PresenceDot member={member} />
+        </div>
         <CardFooter className="flex w-full z-10 justify-start absolute bottom-0 overflow-hidden bg-linear-to-t from-black">
           <div className="flex flex-col text-white p-2">
-            <span className="font-semibold">{member.name}, {calculateAge(member.dateOfBirth)}</span>
+            <span className="font-semibold">
+              {member.name}, {calculateAge(member.dateOfBirth)}
+            </span>
             <span className="text-sm">{member.city}</span>
           </div>
         </CardFooter>

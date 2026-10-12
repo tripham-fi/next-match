@@ -8,6 +8,7 @@ import { ReactNode } from "react";
 import MemberNav from "./MemberNav";
 import SectionTitle from "./SectionTitle";
 import { getCurrentUser } from "@/lib/auth";
+import PresenceDot from "@/components/PresenceDot";
 
 export const sections = [
   { name: "Profile", path: "", segment: null },
@@ -44,8 +45,11 @@ export default async function layout({
           />
           <Card.Content className="flex flex-col items-center">
             <div className="flex flex-col items-center">
-              <div className="text-2xl">
-                {member.name}, {calculateAge(member.dateOfBirth)}
+              <div className="flex">
+                <div className="text-2xl">
+                  {member.name}, {calculateAge(member.dateOfBirth)}
+                </div>
+                <PresenceDot member={member} />
               </div>
               <div className="text-sm text-foreground/50">
                 {member.city}, {member.country}
@@ -77,7 +81,7 @@ export default async function layout({
       <div className="col-span-9">
         <Card className="w-full mt-6 h-[80vh]">
           <Card.Header>
-            <SectionTitle sections={sections} isOwner={isCurrentUser}/>
+            <SectionTitle sections={sections} isOwner={isCurrentUser} />
           </Card.Header>
           <Separator />
           <Card.Content className="overflow-y-auto">{children}</Card.Content>
