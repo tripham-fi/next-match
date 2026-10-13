@@ -61,7 +61,6 @@ export const useNotifications = (userId: string | null) => {
     channel.bind("like:new", handleNewLike);
 
     return () => {
-      channel.unsubscribe();
       channel.unbind_all();
     };
   }, [handleNewMessage, handleNewLike]);
