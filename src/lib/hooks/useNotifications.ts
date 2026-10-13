@@ -5,9 +5,9 @@ import { useCallback, useEffect, useRef } from "react";
 import { getPusherClient } from "../pusher-client";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useMessageStore } from "./useMessageStore";
-import { MessageDto } from "../types";
-import { toast } from "@heroui/react";
+import { LikeSourceDto, MessageDto } from "../types";
 import { messageToast } from "@/components/MessageToast";
+import { likeToast } from "@/components/LikeToast";
 
 export const useNotifications = (userId: string | null) => {
   const channelRef = useRef<Channel | null>(null);
@@ -32,12 +32,17 @@ export const useNotifications = (userId: string | null) => {
     [add, pathname, searchParams, updateUnreadCount],
   );
 
+  const handleNewLike = useCallback((like: LikeSourceDto) => {
+    likeToast(like);
+  }, []);
+
   useEffect(() => {
     if (!userId) return;
     if (!channelRef.current) {
       channelRef.current = getPusherClient().subscribe(`private-${userId}`);
 
       channelRef.current.bind("message:new", handleNewMessage);
+      channelRef.current.bind("like:new", handleNewLike);
     }
 
     return () => {
@@ -47,5 +52,5 @@ export const useNotifications = (userId: string | null) => {
         channelRef.current = null;
       }
     };
-  }, [userId, handleNewMessage]);
+  }, [userId, handleNewMessage, handleNewLike]);
 };

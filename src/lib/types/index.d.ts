@@ -18,6 +18,12 @@ type MessageDto = {
   recipientImage: string | null;
 };
 
+type LikeSourceDto = {
+  userId: string;
+  name: string;
+  image: string | null;
+};
+
 type MessageWithSenderRecipient = Prisma.MessageGetPayload<{
   select: {
     id: true;
@@ -32,6 +38,18 @@ type MessageWithSenderRecipient = Prisma.MessageGetPayload<{
       };
     };
     recipient: {
+      select: {
+        userId: true;
+        name: true;
+        image: true;
+      };
+    };
+  };
+}>;
+
+type LikeWithSource = Prisma.LikeGetPayload<{
+  select: {
+    sourceMember: {
       select: {
         userId: true;
         name: true;

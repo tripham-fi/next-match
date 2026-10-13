@@ -1,7 +1,9 @@
 "use server";
 
 import { requireAuthUser } from "@/lib/auth";
+import { mapLikeToLikeSourceDto } from "@/lib/mapping";
 import { prisma } from "@/lib/prisma";
+import { pusherServer } from "@/lib/pusher";
 import { revalidatePath } from "next/cache";
 
 export async function toggleLikeMember(targetUserId: string, isLiked: boolean) {
@@ -20,9 +22,27 @@ export async function toggleLikeMember(targetUserId: string, isLiked: boolean) {
       });
     } else {
       // create like
-      await prisma.like.create({
+      const like = await prisma.like.create({
         data: { sourceUserId: user.id, targetUserId },
+        select: {
+          sourceMember: {
+            select: {
+              userId: true,
+              name: true,
+              image: true,
+            },
+          },
+        },
       });
+
+      const likeDto = mapLikeToLikeSourceDto(like);
+
+      // in realtime, notify other user that you like them
+      await pusherServer.trigger(
+        `private-${targetUserId}`,
+        "like:new",
+        likeDto,
+      );
     }
 
     revalidatePath("/members");
