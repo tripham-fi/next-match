@@ -5,33 +5,40 @@ import { MessageDto } from "@/lib/types";
 import { Channel } from "pusher-js";
 import { useCallback, useEffect, useRef, useState } from "react";
 import MessageBox from "./MessageBox";
-import { formatShortDate } from "@/lib/util";
 import { markedMessageAsRead } from "@/server/actions/messages";
+import { useMessageStore } from "@/lib/hooks/useMessageStore";
 
 type Props = {
   initialMessages: MessageDto[];
   currentUserId: string;
   chatId: string;
+  readCount: number;
 };
 
 export default function MessageList({
   chatId,
   currentUserId,
   initialMessages,
+  readCount,
 }: Props) {
   const [messages, setMessages] = useState(initialMessages);
   const channelRef = useRef<Channel | null>(null);
   const messageEndRef = useRef<HTMLDivElement>(null);
+  const updateUnreadCount = useMessageStore((state) => state.updateUnreadCount);
+  const countUpdated = useRef(false);
 
-  const handleNewMessage = useCallback(async (message: MessageDto) => {
-    setMessages((prev) => {
-      return [...prev, message];
-    });
+  const handleNewMessage = useCallback(
+    async (message: MessageDto) => {
+      setMessages((prev) => {
+        return [...prev, message];
+      });
 
-    if (message.senderId !== currentUserId) {
-      await markedMessageAsRead([message.id], message.senderId);
-    }
-  }, [currentUserId]);
+      if (message.senderId !== currentUserId) {
+        await markedMessageAsRead([message.id], message.senderId);
+      }
+    },
+    [currentUserId],
+  );
 
   const handleReadMessages = useCallback((messageIds: string[]) => {
     setMessages((prev) =>
@@ -42,6 +49,13 @@ export default function MessageList({
       ),
     );
   }, []);
+
+  useEffect(() => {
+    if (!countUpdated.current) {
+      updateUnreadCount(-readCount);
+      countUpdated.current = true;
+    }
+  }, [readCount, updateUnreadCount]);
 
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "auto" });

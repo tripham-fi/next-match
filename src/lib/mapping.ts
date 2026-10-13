@@ -9,8 +9,8 @@ export function mapMessageToMessageDto(
   return {
     id: message.id,
     text: message.text,
-    created: formatShortDate(message.created),
-    dateRead: message.dateRead ? formatShortDate(message.dateRead) : null,
+    created: message.created.toISOString(),
+    dateRead: message.dateRead ? message.dateRead.toISOString() : null,
     senderId: message.sender.userId,
     senderName: message.sender.name,
     senderImage: message.sender.image,

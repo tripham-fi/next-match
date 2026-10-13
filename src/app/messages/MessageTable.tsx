@@ -3,6 +3,7 @@
 import PresenceAvatar from "@/components/PresenceAvatar";
 import { useMessageStore } from "@/lib/hooks/useMessageStore";
 import { MessageDto } from "@/lib/types";
+import { formatShortDate } from "@/lib/util";
 import { deleteMessage } from "@/server/actions/messages";
 import { Button, Table, toast } from "@heroui/react";
 import { useRouter } from "next/navigation";
@@ -22,11 +23,12 @@ export default function MessageTable({ initialMessages, container }: Props) {
   const partyLabel = isOutbox ? "Recipient" : "Sender";
   const initMessages = useRef(initialMessages);
 
-  const { set, remove, messages } = useMessageStore(
+  const { set, remove, messages, updateUnreadCount } = useMessageStore(
     useShallow((state) => ({
       set: state.set,
       remove: state.remove,
       messages: state.messages,
+      updateUnreadCount: state.updateUnreadCount,
     })),
   );
 
@@ -35,12 +37,15 @@ export default function MessageTable({ initialMessages, container }: Props) {
     return () => set([]);
   }, [set, container]);
 
-  const handleDelete = (messageId: string) => {
+  const handleDelete = (message: MessageDto) => {
     startTransition(async () => {
-      const result = await deleteMessage(messageId, isOutbox);
+      const result = await deleteMessage(message.id, isOutbox);
       if (result.status === "error") toast.danger(result.error as string);
       else {
-        remove(messageId);
+        remove(message.id);
+        if (!message.dateRead && !isOutbox) {
+          updateUnreadCount(-1);
+        }
       }
     });
   };
@@ -86,14 +91,16 @@ export default function MessageTable({ initialMessages, container }: Props) {
                   <Table.Cell>
                     <span className="line-clamp-1">{message.text}</span>
                   </Table.Cell>
-                  <Table.Cell>{message.created}</Table.Cell>
+                  <Table.Cell>
+                    {formatShortDate(new Date(message.created))}
+                  </Table.Cell>
                   <Table.Cell>
                     <div onPointerDown={(e) => e.stopPropagation()}>
                       <Button
                         isIconOnly
                         variant="danger-soft"
                         aria-label="Delete Message"
-                        onClick={() => handleDelete(message.id)}
+                        onClick={() => handleDelete(message)}
                         isPending={isDeleting}
                       >
                         <AiFillDelete size={18} />

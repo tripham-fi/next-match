@@ -83,6 +83,8 @@ export async function getMessageThread(recipientId: string) {
       select: messageSelect,
     });
 
+    let readCount = 0;
+
     if (messages.length > 0) {
       const readMessageIds = messages
         .filter(
@@ -103,9 +105,14 @@ export async function getMessageThread(recipientId: string) {
         "messages:read",
         readMessageIds,
       );
+
+      readCount = readMessageIds.length;
     }
 
-    return messages.map((message) => mapMessageToMessageDto(message));
+    return {
+      messages: messages.map((message) => mapMessageToMessageDto(message)),
+      readCount,
+    };
   } catch (err) {
     console.log(err);
     throw err;
@@ -203,6 +210,19 @@ export async function deleteMessage(
   } catch (err) {
     console.log(err);
     return handlePrismaError(err);
+  }
+}
+
+export async function getUnreadMessageCount() {
+  try {
+    const user = await requireAuthUser();
+
+    return prisma.message.count({
+      where: { recipientId: user.id, dateRead: null, recipientDeleted: false },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
   }
 }
 

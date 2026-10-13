@@ -1,18 +1,22 @@
 import { create } from "zustand";
 import { MessageDto } from "../types";
 import { devtools } from "zustand/middleware";
+import { stat } from "fs";
 
 type MessageState = {
   messages: MessageDto[];
+  unreadCount: number;
   add: (message: MessageDto) => void;
   remove: (id: string) => void;
   set: (messages: MessageDto[]) => void;
+  updateUnreadCount: (amount: number) => void;
 };
 
 export const useMessageStore = create<MessageState>()(
   devtools(
     (set) => ({
       messages: [],
+      unreadCount: 0,
       add: (message) =>
         set(
           (state) => ({ messages: [message, ...state.messages] }),
@@ -28,6 +32,12 @@ export const useMessageStore = create<MessageState>()(
           "messages/remove",
         ),
       set: (messages) => set({ messages: messages }, false, "messages/set"),
+      updateUnreadCount: (amount) =>
+        set(
+          (state) => ({ unreadCount: state.unreadCount + amount }),
+          false,
+          "messages/updateUnread",
+        ),
     }),
     { name: "MessageStore" },
   ),

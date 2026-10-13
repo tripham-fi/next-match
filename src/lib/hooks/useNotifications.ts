@@ -14,6 +14,7 @@ export const useNotifications = (userId: string | null) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const add = useMessageStore((state) => state.add);
+  const updateUnreadCount = useMessageStore((state) => state.updateUnreadCount);
 
   const handleNewMessage = useCallback(
     (message: MessageDto) => {
@@ -22,11 +23,13 @@ export const useNotifications = (userId: string | null) => {
         searchParams.get("container") !== "outbox"
       ) {
         add(message);
+        updateUnreadCount(1);
       } else if (pathname !== `/members/${message.senderId}/chat`) {
         messageToast(message);
+        updateUnreadCount(1);
       }
     },
-    [add, pathname, searchParams],
+    [add, pathname, searchParams, updateUnreadCount],
   );
 
   useEffect(() => {

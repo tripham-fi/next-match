@@ -9,7 +9,7 @@ export default async function ChatPage(
   props: PageProps<"/members/[userId]/chat">,
 ) {
   const { userId } = await props.params;
-  const messages = await getMessageThread(userId);
+  const {messages, readCount} = await getMessageThread(userId);
   const currentUser = await getCurrentUser();
 
   if (!currentUser) return unauthorized();
@@ -21,6 +21,7 @@ export default async function ChatPage(
         initialMessages={messages}
         currentUserId={currentUser?.id}
         chatId={chatId}
+        readCount={readCount}
       />
       <ChatForm />
     </div>
