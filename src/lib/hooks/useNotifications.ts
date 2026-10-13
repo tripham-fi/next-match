@@ -40,9 +40,6 @@ export const useNotifications = (userId: string | null) => {
     if (!userId) return;
     if (!channelRef.current) {
       channelRef.current = getPusherClient().subscribe(`private-${userId}`);
-
-      channelRef.current.bind("message:new", handleNewMessage);
-      channelRef.current.bind("like:new", handleNewLike);
     }
 
     return () => {
@@ -52,5 +49,20 @@ export const useNotifications = (userId: string | null) => {
         channelRef.current = null;
       }
     };
-  }, [userId, handleNewMessage, handleNewLike]);
+  }, [userId]);
+
+  useEffect(() => {
+    const channel = channelRef.current;
+    if (!channel) {
+      return;
+    }
+
+    channel.bind("message:new", handleNewMessage);
+    channel.bind("like:new", handleNewLike);
+
+    return () => {
+      channel.unsubscribe();
+      channel.unbind_all();
+    };
+  }, [handleNewMessage, handleNewLike]);
 };
