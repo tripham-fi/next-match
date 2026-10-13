@@ -19,11 +19,10 @@ export default async function ChatPage(
     <div className="flex flex-col h-full">
       <MessageList
         initialMessages={messages}
-        currentUserId={currentUser?.id}
+        currentUser={currentUser}
         chatId={chatId}
         readCount={readCount}
       />
-      <ChatForm />
     </div>
   );
 }
